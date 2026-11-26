@@ -1,5 +1,0 @@
-The backend now uses strict TypeScript instead of JavaScript. TypeScript checks the code for type mistakes before it runs, making changes easier to maintain and safer to build upon.
-
-All five backend source files were converted to TypeScript. The project uses a strict tsconfig.json, including noUncheckedIndexedAccess, and keeps compiled JavaScript in backend/dist. The npm scripts use tsx watch for development, tsc for builds, node to run the compiled server, and tsc --noEmit for type checking.
-
-The server now waits for its listening event before reporting successful startup. It also handles server errors, including port binding errors such as EADDRINUSE, logs the failure, and exits with status code 1 rather than reporting a false success.
