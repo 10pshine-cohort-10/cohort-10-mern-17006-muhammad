@@ -1,10 +1,10 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const pinoHttp = require('pino-http');
-const logger = require('./config/logger');
-const errorHandler = require('./middleware/errorHandler');
-const AppError = require('./utils/AppError');
+import cors from 'cors';
+import express from 'express';
+import helmet from 'helmet';
+import pinoHttp from 'pino-http';
+import logger from './config/logger';
+import errorHandler from './middleware/errorHandler';
+import AppError from './utils/AppError';
 
 const app = express();
 
@@ -19,9 +19,9 @@ app.use(
   })
 );
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
 app.use((req, res, next) => next(new AppError('Route not found', 404)));
 app.use(errorHandler);
 
-module.exports = app;
+export default app;
