@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler } from 'express';
+import mongoose from 'mongoose';
 import logger from '../config/logger';
 
 const errorHandler: ErrorRequestHandler = (err: unknown, req, res, _next) => {
@@ -18,6 +19,21 @@ const errorHandler: ErrorRequestHandler = (err: unknown, req, res, _next) => {
   if (errorType === 'entity.parse.failed') {
     statusCode = 400;
     message = 'Invalid JSON in request body';
+  } else if (err instanceof mongoose.Error.CastError) {
+    statusCode = 400;
+    message = 'Invalid id';
+  } else if (err instanceof mongoose.Error.ValidationError) {
+    statusCode = 400;
+    message = Object.values(err.errors)
+      .map((error) => error.message)
+      .join(', ');
+  } else if (
+    errorObject &&
+    'code' in err &&
+    err.code === 11000
+  ) {
+    statusCode = 409;
+    message = 'Duplicate value: that record already exists';
   }
 
   if (statusCode >= 500) {
