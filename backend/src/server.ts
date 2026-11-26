@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 5000;
     logger.fatal({ err: error }, 'Failed to start server');
     process.exit(1);
   }
-});
+})();
 
 process.on('unhandledRejection', (reason: unknown) => {
   logger.fatal({ err: reason }, 'Unhandled promise rejection');
