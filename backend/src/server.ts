@@ -2,12 +2,18 @@ import 'dotenv/config';
 import app from './app';
 import connectDB from './config/db';
 import logger from './config/logger';
+import User from './models/User';
 
 const PORT = process.env.PORT || 5000;
 
 (async () => {
   try {
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET is not configured');
+    }
+
     await connectDB();
+    await User.init();
 
     const server = app.listen(PORT);
 

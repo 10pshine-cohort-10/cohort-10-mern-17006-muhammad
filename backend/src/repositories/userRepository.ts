@@ -12,11 +12,19 @@ export interface AuthUserRecord extends PublicUserRecord {
 }
 
 export async function findByEmail(email: string): Promise<AuthUserRecord | null> {
-  return User.findOne({ email }).select('+passwordHash').lean<AuthUserRecord>();
+  try {
+    return await User.findOne({ email }).select('+passwordHash').lean<AuthUserRecord>();
+  } catch (error: unknown) {
+    throw error;
+  }
 }
 
 export async function findById(id: string): Promise<PublicUserRecord | null> {
-  return User.findById(id).lean<PublicUserRecord>();
+  try {
+    return await User.findById(id).lean<PublicUserRecord>();
+  } catch (error: unknown) {
+    throw error;
+  }
 }
 
 export async function create(input: {
@@ -24,6 +32,10 @@ export async function create(input: {
   email: string;
   passwordHash: string;
 }): Promise<UserDocument & { _id: unknown }> {
-  const user = await User.create(input);
-  return user.toObject();
+  try {
+    const user = await User.create(input);
+    return user.toObject();
+  } catch (error: unknown) {
+    throw error;
+  }
 }

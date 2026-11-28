@@ -12,7 +12,7 @@ declare global {
 
 const auth: RequestHandler = (req, _res, next) => {
   const [scheme, token] = (req.headers.authorization || '').split(' ');
-  if (scheme !== 'Bearer' || !token) {
+  if (scheme?.toLowerCase() !== 'bearer' || !token) {
     next(new AppError('Authentication required', 401));
     return;
   }
