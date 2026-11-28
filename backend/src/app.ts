@@ -2,9 +2,11 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import pinoHttp from 'pino-http';
+import { rateLimit } from 'express-rate-limit';
 import logger from './config/logger';
 import errorHandler from './middleware/errorHandler';
 import AppError from './utils/AppError';
+import authRoutes from './routes/authRoutes';
 
 const app = express();
 
@@ -20,6 +22,17 @@ app.use(
 );
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+
+app.use(
+  '/api/auth',
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+  }),
+  authRoutes,
+);
 
 app.use((req, res, next) => next(new AppError('Route not found', 404)));
 app.use(errorHandler);
