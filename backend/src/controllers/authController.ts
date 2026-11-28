@@ -8,8 +8,11 @@ export const register: RequestHandler<
   authService.RegisterInput
 > = async (req, res, next) => {
   try {
-    const result = await authService.register(req.body);
-    res.status(201).json({ status: 'success', ...result });
+    await authService.register(req.body);
+    res.status(202).json({
+      status: 'success',
+      message: 'If registration was successful, you can now sign in.',
+    });
   } catch (error) {
     next(error);
   }

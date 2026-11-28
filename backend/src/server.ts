@@ -3,15 +3,13 @@ import app from './app';
 import connectDB from './config/db';
 import logger from './config/logger';
 import User from './models/User';
+import { validateJwtConfig } from './services/authService';
 
 const PORT = process.env.PORT || 5000;
 
 (async () => {
   try {
-    if (!process.env.JWT_SECRET) {
-      throw new Error('JWT_SECRET is not configured');
-    }
-
+    validateJwtConfig();
     await connectDB();
     await User.init();
 

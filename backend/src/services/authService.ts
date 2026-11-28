@@ -27,6 +27,8 @@ export interface LoginInput {
   password: string;
 }
 
+const JWT_SECRET_PLACEHOLDER = 'replace-with-random-secret';
+
 interface UserWithId {
   _id: unknown;
   name: string;
@@ -48,22 +50,36 @@ function getJwtSecret(): string {
   if (!secret) {
     throw new Error('JWT_SECRET is not configured');
   }
+  if (secret.trim().toLowerCase() === JWT_SECRET_PLACEHOLDER) {
+    throw new Error('JWT_SECRET must not use the example placeholder');
+  }
   return secret;
 }
 
-function signToken(user: UserWithId): string {
+function getJwtExpiresIn(): SignOptions['expiresIn'] {
   const expiresIn = process.env.JWT_EXPIRES_IN || '1d';
-  const options: SignOptions = { expiresIn: expiresIn as SignOptions['expiresIn'] };
-  return jwt.sign({ sub: String(user._id) }, getJwtSecret(), options);
+  return expiresIn as SignOptions['expiresIn'];
 }
 
-export async function register(input: RegisterInput): Promise<AuthResult> {
+export function validateJwtConfig(): void {
+  const secret = getJwtSecret();
   try {
-    const existing = await userRepository.findByEmail(input.email);
-    if (existing) {
-      throw new AppError('Email already registered', 409);
-    }
+    jwt.sign({ sub: 'startup-validation' }, secret, {
+      expiresIn: getJwtExpiresIn(),
+    });
+  } catch {
+    throw new Error('JWT_EXPIRES_IN is invalid');
+  }
+}
 
+function signToken(user: UserWithId): string {
+  return jwt.sign({ sub: String(user._id) }, getJwtSecret(), {
+    expiresIn: getJwtExpiresIn(),
+  });
+}
+
+export async function register(input: RegisterInput): Promise<void> {
+  try {
     const passwordHash = await bcrypt.hash(input.password, 10);
 
     let user: UserWithId;
@@ -80,13 +96,12 @@ export async function register(input: RegisterInput): Promise<AuthResult> {
         'code' in error &&
         error.code === 11000
       ) {
-        throw new AppError('Email already registered', 409);
+        return;
       }
       throw error;
     }
 
     logger.info({ userId: String(user._id) }, 'User registered');
-    return { user: toPublicUser(user), token: signToken(user) };
   } catch (error: unknown) {
     throw error;
   }
