@@ -28,6 +28,7 @@ export interface LoginInput {
 }
 
 const JWT_SECRET_PLACEHOLDER = 'replace-with-random-secret';
+const JWT_SECRET_PATTERN = /^[\da-f]{64}$/i;
 
 interface UserWithId {
   _id: unknown;
@@ -52,6 +53,11 @@ function getJwtSecret(): string {
   }
   if (secret.trim().toLowerCase() === JWT_SECRET_PLACEHOLDER) {
     throw new Error('JWT_SECRET must not use the example placeholder');
+  }
+  if (!JWT_SECRET_PATTERN.test(secret)) {
+    throw new Error(
+      'JWT_SECRET must be 32 cryptographically random bytes encoded as 64 hexadecimal characters',
+    );
   }
   return secret;
 }
@@ -115,7 +121,7 @@ export async function login(input: LoginInput): Promise<AuthResult> {
     );
 
     if (!valid) {
-      logger.warn({ email: input.email }, 'Failed login attempt');
+      logger.warn('Failed login attempt');
       throw new AppError('Invalid email or password', 401);
     }
 
